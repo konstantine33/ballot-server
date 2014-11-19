@@ -14,5 +14,6 @@ var GroupSchema = new Schema({
 GroupSchema.plugin(plugins.metaPlugin);
 GroupSchema.plugin(plugins.modelTypePlugin, model_types.GROUP);
 GroupSchema.plugin(plugins.showVirtuals);
+GroupSchema.plugin(require('helpers/query_plugin'));
 
 module.exports = mongoose.model(model_types.GROUP, GroupSchema);

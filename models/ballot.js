@@ -52,5 +52,6 @@ var BallotSchema = new Schema({
 BallotSchema.plugin(plugins.metaPlugin);
 BallotSchema.plugin(plugins.modelTypePlugin, model_types.BALLOT);
 BallotSchema.plugin(plugins.showVirtuals);
+BallotSchema.plugin(require('helpers/query_plugin'));
 
 module.exports = mongoose.model(model_types.BALLOT, BallotSchema);

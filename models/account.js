@@ -36,5 +36,6 @@ var AccountSchema = new Schema({
 AccountSchema.plugin(plugins.metaPlugin);
 AccountSchema.plugin(plugins.modelTypePlugin, model_types.ACCOUNT);
 AccountSchema.plugin(plugins.showVirtuals);
+AccountSchema.plugin(require('helpers/query_plugin'));
 
 module.exports = mongoose.model(model_types.ACCOUNT, AccountSchema);
