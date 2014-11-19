@@ -9,6 +9,7 @@ var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var Promise = require('bluebird');
 var mongoose = Promise.promisifyAll(require('mongoose'));
+var BError = require('helpers/BError');
 
 mongoose.connect(require('config/mongo').getUrl());
 
@@ -57,19 +58,44 @@ if (app.get('env') !== 'production') {
 
 // API Routing
 app.use('/auth', require('routers/auth_router'));
+app.use('/*', function(req,res,next){
+    if(!req.user){
+        next(BError(400, "Not logged into server."))
+    }
 
-
+    next()
+});
 
 //Renders invalid api error catching
 app.get('/*', function (req, res, next) {
-    res.send(404, "Invalid API Request");
+    next(BError(404, "Invalid API Address"))
 });
 
 //Error handler
 app.use(function (err, req, res, next) {
-    console.log(err);
-    console.log(err.stack);
-    res.send(500, err);
+    var error = err.cause || err;
+
+    if (error.name === "MongoError" && (error.code === 11000 || error.code === 11001)) {
+        log(error);
+        return res.send(400, error.err);
+    } else if (error.name === "ValidationError") {
+        log(error);
+        var message = '';
+        _.forIn(error.errors, function (e) {
+            message += e.message;
+        });
+        return res.send(400, message);
+    } else if (error.name === "BallotError") {
+        log(error);
+        return res.send(error.status || 400, error.message);
+    }
+
+    next(err);
+});
+
+app.use(function (err, req, res, next) {
+    winston.error(err, err.stack);
+    res.send(500, err.message || err);
 });
 
 app.listen(app.get('port'), function () {
