@@ -1,15 +1,22 @@
 var _ = require('lodash');
 var utilities = require('helpers/utilities');
 
+var a =
+{
+    query_type: "find", //defaults to "find". Other options: "findOne", "count"
+    skip: 5, //defaults to 0
+    sort: "-_id", //defaults to "-_id" (ie sorts last created document first)
+    limit: 10, // defaults to 10,
+    select: "",
+    populate: {},
+    params: {}
+}
+
+
 module.exports = function (Schema) {
     Schema.statics.query = function Query(config) {
         var Model = this;
         var query;
-
-        if(typeof config !== 'object'){
-            config = utilities.parseJSON(config);
-        }
-
         config.params = config.params || {};
 
         switch (config.query_type){
@@ -44,6 +51,8 @@ module.exports = function (Schema) {
                 if(_.isNumber(data)){
                     data = data.toString();
                 }
+
+                return data
             })
     }
 };
