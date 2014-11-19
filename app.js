@@ -60,11 +60,12 @@ if (app.get('env') !== 'production') {
 app.use('/auth', require('routers/auth_router'));
 app.use('/*', function(req,res,next){
     if(!req.user){
-        next(BError(400, "Not logged into server."))
+       return next(BError(400, "Not logged into server."))
     }
-
     next()
 });
+
+app.use('/ballot', require('routers/ballot_router'));
 
 //Renders invalid api error catching
 app.get('/*', function (req, res, next) {
@@ -76,17 +77,17 @@ app.use(function (err, req, res, next) {
     var error = err.cause || err;
 
     if (error.name === "MongoError" && (error.code === 11000 || error.code === 11001)) {
-        log(error);
+        console.log(error);
         return res.send(400, error.err);
     } else if (error.name === "ValidationError") {
-        log(error);
+        console.log(error);
         var message = '';
         _.forIn(error.errors, function (e) {
             message += e.message;
         });
         return res.send(400, message);
     } else if (error.name === "BallotError") {
-        log(error);
+        console.log(error);
         return res.send(error.status || 400, error.message);
     }
 
@@ -94,7 +95,7 @@ app.use(function (err, req, res, next) {
 });
 
 app.use(function (err, req, res, next) {
-    winston.error(err, err.stack);
+    console.error(err, err.stack);
     res.send(500, err.message || err);
 });
 
