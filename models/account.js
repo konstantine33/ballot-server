@@ -21,10 +21,11 @@ var AccountSchema = new Schema({
     //
     //groups: {
     //    type: []
-    //}
+    //
 });
 
 AccountSchema.plugin(plugins.metaPlugin);
 AccountSchema.plugin(plugins.modelTypePlugin, "Account");
+AccountSchema.plugin(plugins.showVirtuals);
 
 module.exports = mongoose.model("Account", AccountSchema);

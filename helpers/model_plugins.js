@@ -13,3 +13,8 @@ module.exports.modelTypePlugin = function modelTypePlugin(schema, name) {
         }
     });
 };
+
+module.exports.showVirtuals = function showVirtuals(schema){
+  schema.set('toJSON', {virtuals: true});
+  schema.set('toObject', {virtuals: true});
+};
