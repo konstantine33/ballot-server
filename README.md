@@ -1,7 +1,45 @@
+Installing Server Components
+--------
+
+1. Clone the repository:
+    ```
+    $ git clone https://github.com/renovatd/constant-home
+    ```
+
+2. Install Node (if you don't have it): http://nodejs.org/download/
+
+3. Install MongoDB (if you don't have it): https://www.mongodb.org/
+
+3. Install Redis (if you don't have it): http://redis.io/
+NOTE: Please follow the special instructions for WINDOWS on the download page
+
+4. Install all the packages in `packages.json` via NPM:
+    ```
+    $ npm install
+    ```
+
+5. Install Grunt CLI globally (if you don't have it):
+    ```
+    $ npm install -g grunt-cli
+    ```
+
+7. Install a MongoDB Database viewer (if you don't have it; RoboMongo is recommended)
+
+
 Starting the Server
 ----------------------
-`grunt dev` - for development server
-`grunt prod` - for production server
+
+###Development###
+Prior to starting you must have `redis-server` and `mongod` running on their respective default localhost port.
+
+You can start the server using: `grunt dev`
+
+
+###Production###
+You must have `redis-sever` running on the default localhost port.
+
+You can start the server using: `grunt prod`
+
 
 Start Script
 -------------
