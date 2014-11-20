@@ -1,11 +1,16 @@
 var express = require('express');
 var passport = require('passport');
 
+var BError = require('helpers/BError');
 var router = express.Router();
+
 
 router.post("/",
     function (req, res, next) {
         req.body.password = "none"; //must set this otherwise it complains
+        if(!req.body.authenticator){
+            return next(BError(400, "No authenticator provided"))
+        }
         passport.authenticate('local-auth', function (err, user, info) {
             if (err) {
                 return next(err);

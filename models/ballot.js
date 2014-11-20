@@ -37,7 +37,9 @@ var BallotSchema = new Schema({
                 },
                 time: Date,
                 skipped: Boolean,
-                flagged: Boolean
+                flagged: Boolean,
+                _id: false,
+                id: false
             }
         ],
         'default': []
