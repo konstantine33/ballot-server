@@ -24,6 +24,15 @@ must be rerun.
 Sets `process.env.NODE_ENV`. Default: `development`<br>
 Other valid options: `production`
 
+#####MongoDB Environment: `--mongo=`
+Sets `process.env.MONGO_ENV`. No default value.<br>
+Valid options: `local`, `prod`
+
+You can use this in conjunction with `require('config/mongo').getUrl()` to retrieve a mongo URL based on `NODE_ENV` and `MONGO_ENV`.
+If `--mongo` is not specified, the returned url points to your `local` mongo for `NODE_ENV = development` and
+the production mongo for `NODE_ENV = production`. If `--mongo` flag is set, it will override any behavior based on `NODE_ENV` and
+set the url to whatever is specified.
+
 #####Custom forever-monitor restarts: `--restarts=`
 Sets number of times forever-monitor will attempt restart the script if the script should crash due to an unhandled error.<br>
 Defaults to: `0` for development and `2` for production.
