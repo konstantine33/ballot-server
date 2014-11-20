@@ -36,8 +36,14 @@ var BallotSchema = new Schema({
                     index: true
                 },
                 time: Date,
-                skipped: Boolean,
-                flagged: Boolean,
+                skipped: {
+                    type: Boolean,
+                    default: false
+                },
+                flagged: {
+                    type: Boolean,
+                    default: false
+                },
                 _id: false,
                 id: false
             }
@@ -55,5 +61,12 @@ BallotSchema.plugin(plugins.metaPlugin);
 BallotSchema.plugin(plugins.modelTypePlugin, model_types.BALLOT);
 BallotSchema.plugin(plugins.showVirtuals);
 BallotSchema.plugin(require('helpers/query_plugin'));
+BallotSchema.methods.present = function(){
+    var data = this.toObject();
+    delete data.responses;
+    delete data.creator;
+
+    return data
+};
 
 module.exports = mongoose.model(model_types.BALLOT, BallotSchema);

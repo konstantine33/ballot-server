@@ -26,15 +26,14 @@ router.route("/")
     })
     .get(function (req, res, next) {
         var query_config = req.query;
-        query_config.params = query_config.params || {};
-
-        //This is so that requests can only see their own polls
-        query_config.params.creator = req.user._id;
-
+        query_config.params = {creator: req.user._id};
 
         Ballot.query(query_config)
             .then(function (ballots) {
-                res.send(200, ballots)
+                var results = ballots.map(function(b){
+                    return b.present()
+                });
+                res.send(200, results)
             })
             .catch(function (err) {
                 next(err)
@@ -43,14 +42,24 @@ router.route("/")
 
 router.get('/responded', function (req, res, next) {
     var query_config = req.query;
-    query_config.params = query_config.params || {};
 
     //Queries only ballots that you have responded to
-    query_config.params['responses.account_id'] = req.user._id;
+    query_config.params = {
+        responses: {
+            $elemMatch: {
+                account_id: req.user._id,
+                skipped: false,
+                flagged: false
+            }
+        }
+    };
 
     Ballot.query(query_config)
         .then(function (ballots) {
-            res.send(200, ballots)
+            var results = ballots.map(function(b){
+                return b.present()
+            });
+            res.send(200, results)
         })
         .catch(function (err) {
             next(err)
@@ -69,7 +78,10 @@ router.get('/rec', function (req, res, next) {
 
     Ballot.query(query_config)
         .then(function (ballots) {
-            res.send(200, ballots)
+            var results = ballots.map(function(b){
+                return b.present()
+            });
+            res.send(200, results)
         })
         .catch(function (err) {
             next(err)
@@ -92,12 +104,7 @@ router.param("ballot_id", function (req, res, next, ballot_id) {
 
 router.route('/:ballot_id')
     .get(function (req, res, next) {
-        var ballot = req.ballot.toObject(); //Turn into object first. Cannot delete properties off of native mongoose document
-
-        delete ballot.responses;
-        delete ballot.creator;
-
-        res.send(200, ballot)
+        res.send(200, req.ballot.present())
     })
     .post(function (req, res, next) {
         if(!req.ballot.creator.equals(req.user._id)){
