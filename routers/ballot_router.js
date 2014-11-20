@@ -59,7 +59,7 @@ router.get('/responded', function (req, res, next) {
 
 router.get('/rec', function (req, res, next) {
     var query_config = {
-        limit: req.query.limit || 1,
+        limit: Math.min(req.query.limit, 20) || 5,
         params: {
             'responses.account_id': {
                 $nin: [req.user._id]
@@ -79,6 +79,9 @@ router.get('/rec', function (req, res, next) {
 router.param("ballot_id", function (req, res, next, ballot_id) {
     Ballot.findByIdAsync(ballot_id)
         .then(function (ballot) {
+            if(!ballot){
+                return next(BError(404, "Ballot not found"))
+            }
             req.ballot = ballot;
             next()
         })
@@ -86,6 +89,53 @@ router.param("ballot_id", function (req, res, next, ballot_id) {
             next(err)
         })
 });
+
+router.route('/:ballot_id')
+    .get(function (req, res, next) {
+        var ballot = req.ballot.toObject(); //Turn into object first. Cannot delete properties off of native mongoose document
+
+        delete ballot.responses;
+        delete ballot.creator;
+
+        res.send(200, ballot)
+    })
+    .post(function (req, res, next) {
+        if(!req.ballot.creator.equals(req.user._id)){
+            return next(BError(401, "No access"))
+        }
+
+        if(req.ballot.closed === !!req.body.closed){
+            return res.send(200)
+        }
+
+        req.ballot.closed = !!req.body.closed;
+        req.ballot.saveAsync()
+            .then(function(){
+                return res.send(200)
+            })
+            .catch(function (err) {
+                next(err)
+            })
+
+    })
+    .delete(function (req, res, next) {
+        if(!req.ballot.creator.equals(req.user._id)){
+            return next(BError(401, "No access"))
+        }
+
+        if(req.ballot.closed){
+            return next(BError(401, "You cannot delete a ballot that has already closed"))
+        }
+
+        req.ballot.removeAsync()
+            .then(function(){
+                return res.send(200)
+            })
+            .catch(function (err) {
+                next(err)
+            })
+
+    });
 
 router.post('/:ballot_id/respond', function (req, res, next) {
     var q = {
@@ -105,10 +155,12 @@ router.post('/:ballot_id/respond', function (req, res, next) {
         $push: {
             responses: response
         },
-        $inc: {}
+        $inc: {
+            responses_count: 1
+        }
     };
 
-    switch (req.body.response){
+    switch (req.body.response) {
         case "YES":
             update.$inc.yes_count = 1;
             break;
@@ -128,14 +180,14 @@ router.post('/:ballot_id/respond', function (req, res, next) {
     }
 
     Ballot.findOneAndUpdateAsync(q, update)
-        .then(function(result){
-            if(!result){
+        .then(function (result) {
+            if (!result) {
                 return next(BError(400, "Your response was not recorded because this ballot has either been closed or deleted, or you have already responded to this ballot."))
             }
 
             res.send(200)
         })
-        .catch(function(err){
+        .catch(function (err) {
             next(err)
         })
 
