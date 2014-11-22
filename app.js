@@ -9,16 +9,34 @@ var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var Promise = require('bluebird');
 var mongoose = Promise.promisifyAll(require('mongoose'));
+var redis = require('redis');
+
 var BError = require('helpers/BError');
 
+//Connects to the proper mongodb based on environment
 mongoose.connect(require('config/mongo').getUrl());
-
 var db = mongoose.connection;
-
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function callback() {
     console.log('Connected to MongoDB');
 });
+
+//Creates the proper redis client based on environment
+var redis_client;
+if (process.env.REDISTOGO_URL) {
+    var rtg   = require("url").parse(process.env.REDISTOGO_URL);
+    redis_client = require("redis").createClient(rtg.port, rtg.hostname);
+    redis_client.auth(rtg.auth.split(":")[1]);
+} else {
+    redis_client = redis.createClient();
+}
+redis_client.on('connect', function(){
+    console.log('Connected to Redis')
+});
+redis_client.on('error', function(e){
+    console.error('Error connecting to Redis: ' + e)
+});
+
 
 //walks through and registers models by requiring all files except the helpers directory
 require('require-directory')(module, 'models', /helpers/);
@@ -32,6 +50,7 @@ app.use(cookieParser());
 app.use(session({
     store: new RedisStore(
         {
+            client: redis_client,
             TTL: 60*60*24*14
         }
     ),
@@ -44,7 +63,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 require('config/passport')(passport);
 
-// Development logging & playground
+// Development and staging logging & playground
 if (app.get('env') !== 'production') {
     app.engine('html', require('ejs').renderFile);
     app.set('view engine', 'html');

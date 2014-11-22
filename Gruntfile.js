@@ -21,6 +21,14 @@ module.exports = function (grunt) {
                     delay: 100
                 }
             },
+            staging: {
+                script: 'start.js',
+                options: {
+                    args: ['app.js', '--env=staging'].concat(grunt.option.flags()),
+                    ignore: nodemon_ignore,
+                    delay: 100
+                }
+            },
             prod: {
                 script: 'start.js',
                 options: {
@@ -37,6 +45,7 @@ module.exports = function (grunt) {
     //running the app
     grunt.registerTask('dev', ['nodemon:dev']);
     grunt.registerTask('prod', ['nodemon:prod']);
+    grunt.registerTask('staging', ['nodemon:staging']);
 
     //default
     grunt.registerTask('default', ['dev']);
