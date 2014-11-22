@@ -14,6 +14,8 @@ function getEnvironment (){
 
     if(key === "production"){
         return "production";
+    }else if (key === "staging"){
+        return "staging"
     }
 
     return "development"
